@@ -48,7 +48,15 @@ func main() {
 		switch stmt := stmt.(type) {
 		case *sqlparser.CreateTable:
 			table := &sqlxgen.Table{
-				Name: strings.Title(stmt.Table.Name.String()),
+				Name:    strings.Title(stmt.Table.Name.String()),
+				Columns: make([]*sqlxgen.Column, len(stmt.TableSpec.Columns)),
+			}
+
+			for i, col := range stmt.TableSpec.Columns {
+				table.Columns[i] = &sqlxgen.Column{
+					Name: col.Name.String(),
+					Type: col.Type.SQLType().String(), // TODO: map query.Type to go primitives
+				}
 			}
 
 			tables = append(tables, table)
