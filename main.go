@@ -5,8 +5,12 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"os"
+	"strings"
 
 	"vitess.io/vitess/go/vt/sqlparser"
+
+	"github.com/ajm188/sqlx-gen/sqlxgen"
 )
 
 func check(err error) {
@@ -17,6 +21,7 @@ func check(err error) {
 
 func main() {
 	path := flag.String("schema", "create_commerce_schema.sql", "path to a file containing CREATE TABLE statements")
+	pkgName := flag.String("pkg", "models", "package name to generate for")
 
 	flag.Parse()
 
@@ -29,16 +34,24 @@ func main() {
 
 	tok := sqlparser.NewStringTokenizer(string(data))
 
-	var stmt sqlparser.Statement
+	var (
+		stmt   sqlparser.Statement
+		tables []*sqlxgen.Table
+	)
+
 	for err == nil {
 		stmt, err = sqlparser.ParseNext(tok)
-		if stmt == nil {
-			continue
+		if err != nil {
+			break
 		}
 
 		switch stmt := stmt.(type) {
 		case *sqlparser.CreateTable:
-			log.Print("hello in CreateTable case")
+			table := &sqlxgen.Table{
+				Name: strings.Title(stmt.Table.Name.String()),
+			}
+
+			tables = append(tables, table)
 		default:
 			buf := sqlparser.NewTrackedBuffer(nil)
 			buf.Myprintf("%v", stmt)
@@ -49,4 +62,10 @@ func main() {
 	if err != io.EOF {
 		check(err)
 	}
+
+	err = sqlxgen.Generate(os.Stdout, &sqlxgen.Info{
+		PackageName: *pkgName,
+		Tables:      tables,
+	})
+	check(err)
 }
