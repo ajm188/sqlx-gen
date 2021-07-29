@@ -3,6 +3,9 @@ package sqlxgen
 import (
 	"fmt"
 	"strings"
+
+	"vitess.io/vitess/go/sqltypes"
+	"vitess.io/vitess/go/vt/sqlparser"
 )
 
 type Table struct {
@@ -12,7 +15,7 @@ type Table struct {
 
 type Column struct {
 	Name string
-	Type string
+	Type sqlparser.ColumnType
 }
 
 func (c *Column) GoName() (name string) {
@@ -20,6 +23,26 @@ func (c *Column) GoName() (name string) {
 	name = strings.Title(name)                  // hello world => Hello World
 	name = strings.ReplaceAll(name, " ", "")    // Hello World => HelloWorld
 	return name
+}
+
+func (c *Column) GoType() string {
+	t := c.Type.SQLType()
+	switch {
+	case c.Type.Type == "tinyint": // special handling for booleans
+		return "bool"
+	case sqltypes.IsSigned(t):
+		return "int64"
+	case sqltypes.IsUnsigned(t):
+		return "uint64"
+	case sqltypes.IsFloat(t) || t == sqltypes.Decimal:
+		return "float64"
+	case sqltypes.IsText(t):
+		return "string"
+	case sqltypes.IsBinary(t):
+		return "[]byte"
+	default:
+		panic(fmt.Sprintf("unsupported query.Type: %s (%d)", t.String(), t))
+	}
 }
 
 func (c *Column) StructTag() string {

@@ -8,6 +8,7 @@ create table product(
 create table customer(
   customer_id bigint not null auto_increment,
   email varbinary(128),
+  is_active tinyint(1),
   primary key(customer_id)
 ) ENGINE=InnoDB;
 create table corder(

@@ -11,7 +11,7 @@ package {{ .PackageName }}
 {{ range .Tables }}
 type {{ .Name }} struct {
 {{- range .Columns }}
-	{{ .GoName }} {{ .Type }} {{ .StructTag }}
+	{{ .GoName }} {{ .GoType }} {{ .StructTag }}
 {{- end }}
 }
 {{ end }}`

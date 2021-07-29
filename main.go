@@ -55,7 +55,7 @@ func main() {
 			for i, col := range stmt.TableSpec.Columns {
 				table.Columns[i] = &sqlxgen.Column{
 					Name: col.Name.String(),
-					Type: col.Type.SQLType().String(), // TODO: map query.Type to go primitives
+					Type: col.Type,
 				}
 			}
 
