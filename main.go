@@ -20,7 +20,7 @@ func check(err error) {
 }
 
 func main() {
-	path := flag.String("schema", "create_commerce_schema.sql", "path to a file containing CREATE TABLE statements")
+	path := flag.String("schema", "", "path to a file containing CREATE TABLE statements")
 	pkgName := flag.String("pkg", "models", "package name to generate for")
 
 	flag.Parse()
